@@ -16,10 +16,12 @@ GAME_HEIGHT = 8
 class Rock(GameElement):
     IMAGE = "Rock"
     SOLID = True
+    APPEAR = True
 
 class Key(GameElement):
     IMAGE = "Key"
     SOLID = False
+    APPEAR = False
 
     def interact(self, player):
         player.key_list.append(self)
@@ -29,6 +31,7 @@ class Key(GameElement):
 class Chest(GameElement):
     IMAGE = "Chest"
     SOLID = True
+    APPEAR = True
 
     def interact(self, player):
 
@@ -44,20 +47,27 @@ class Chest(GameElement):
 class Door(GameElement):
     IMAGE = "DoorClosed"
     SOLID = True
+    APPEAR = True
 
     def interact(self, player):
-        #if OrangeGem.DOOR_OPEN == True:
-        if "orange" in player.inventory:
-            self.change_image("DoorOpen")
-            player.inventory.remove("orange")
-            SOLID = False
+        print player.inventory
+        for item in player.inventory:
+            print item
+            if item.COLOR == "orange":
+                self.change_image("DoorOpen")
+                player.inventory.remove(item)
+                self.SOLID = False
 
 
 class Character(GameElement):
     IMAGE = "Cat"
+    replace = False
+    temp_x = 0
+    temp_y = 0
     def keyboard_handler(self, symbol, modifier):
         
         direction = None
+        existing_el = None
         if symbol == key.UP:
             direction = "up"
         elif symbol == key.DOWN:
@@ -70,6 +80,9 @@ class Character(GameElement):
         self.board.draw_msg("[%s] moves %s" % (self.IMAGE, direction))
 
         if direction:
+            #print existing_el
+            # if self.replace:
+            #     existing_el.board.set_el(self.temp_x, self.temp_y, existing_el)
             next_location = self.next_pos(direction)
 
             if next_location:
@@ -77,10 +90,17 @@ class Character(GameElement):
                 next_y = next_location[1]
 
 
-                existing_el = self.board.get_el(next_x, next_y)
+                # existing_el = self.board.get_el(next_x, next_y)
+                # print existing_el
 
                 if existing_el:
                     existing_el.interact(self)
+                    # if existing_el.APPEAR:
+                    #     self.temp_x = next_x
+                    #     self.temp_y = next_y
+                    #     self.replace = True
+                    #     print existing_el
+                    #     print self.temp_x, self.temp_y
 
                 if existing_el and existing_el.SOLID:
                     self.board.draw_msg("There's something in my way!")   
@@ -115,38 +135,28 @@ class Character(GameElement):
         self.key_list = []
 
 class Gem(GameElement):
-    #IMAGE = "BlueGem"
     SOLID = False
+    APPEAR = False
 
     def interact(self, player):
-        #player.inventory.append(self)
-        GAME_BOARD.draw_msg("You just acquired a gem! You have %d items!"%(len(player.inventory)))
-        print player.inventory
-        for i in player.inventory:
-            print type(i)
+        player.inventory.append(self)
+        GAME_BOARD.draw_msg("You just acquired a gem! You have %d gems!"%(len(player.inventory)))
+        #print player.inventory
+        # for i in player.inventory:
+        #     print type(i)
 
 class BlueGem(Gem):
     IMAGE = "BlueGem"
-    def interact(self, player):
-        player.inventory.append("blue")
-        return super(BlueGem, self).interact(player)
-
+    COLOR = "blue"
+    
 class OrangeGem(Gem):
     IMAGE = "OrangeGem"
-    DOOR_OPEN = False
-    def interact(self, player):
-        player.inventory.append("orange")
-        #DOOR_OPEN = True
-        #print DOOR_OPEN
-        
-        return super(OrangeGem, self).interact(player)
-
+    COLOR = "orange"
+    
 class GreenGem(Gem):
     IMAGE = "GreenGem"
-
-    def interact(self, player):
-        player.inventory.append("green")
-        return super(GreenGem, self).interact(player)
+    COLOR = "green"
+    
 
 ####   End class definitions    ####
 
