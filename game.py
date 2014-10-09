@@ -16,12 +16,12 @@ GAME_HEIGHT = 8
 class Rock(GameElement):
     IMAGE = "Rock"
     SOLID = True
-    APPEAR = True
+    #APPEAR = True
 
 class Key(GameElement):
     IMAGE = "Key"
     SOLID = False
-    APPEAR = False
+    #APPEAR = False
 
     def interact(self, player):
         player.key_list.append(self)
@@ -31,7 +31,7 @@ class Key(GameElement):
 class Chest(GameElement):
     IMAGE = "Chest"
     SOLID = True
-    APPEAR = True
+    #APPEAR = True
 
     def interact(self, player):
 
@@ -47,7 +47,7 @@ class Chest(GameElement):
 class Door(GameElement):
     IMAGE = "DoorClosed"
     SOLID = True
-    APPEAR = True
+    #APPEAR = True
 
     def interact(self, player):
         print player.inventory
@@ -61,13 +61,10 @@ class Door(GameElement):
 
 class Character(GameElement):
     IMAGE = "Cat"
-    replace = False
-    temp_x = 0
-    temp_y = 0
+
     def keyboard_handler(self, symbol, modifier):
         
         direction = None
-        existing_el = None
         if symbol == key.UP:
             direction = "up"
         elif symbol == key.DOWN:
@@ -80,27 +77,22 @@ class Character(GameElement):
         self.board.draw_msg("[%s] moves %s" % (self.IMAGE, direction))
 
         if direction:
-            #print existing_el
-            # if self.replace:
-            #     existing_el.board.set_el(self.temp_x, self.temp_y, existing_el)
             next_location = self.next_pos(direction)
 
             if next_location:
                 next_x = next_location[0]
                 next_y = next_location[1]
 
-
-                # existing_el = self.board.get_el(next_x, next_y)
-                # print existing_el
+                existing_el = self.board.get_el(next_x, next_y)
 
                 if existing_el:
                     existing_el.interact(self)
+                    hover_object = existing_el
                     # if existing_el.APPEAR:
                     #     self.temp_x = next_x
                     #     self.temp_y = next_y
-                    #     self.replace = True
-                    #     print existing_el
-                    #     print self.temp_x, self.temp_y
+
+
 
                 if existing_el and existing_el.SOLID:
                     self.board.draw_msg("There's something in my way!")   
@@ -109,6 +101,7 @@ class Character(GameElement):
                     self.board.set_el(next_x, next_y, self)
             elif next_location == False:
                 self.board.draw_msg("You'll fall off the board!")
+
 
     def next_pos(self, direction):
         if direction == "up":
