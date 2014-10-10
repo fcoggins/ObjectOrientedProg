@@ -16,11 +16,13 @@ GAME_HEIGHT = 10
 class Rock(GameElement):
     IMAGE = "Rock"
     SOLID = True
+    message = True
     #APPEAR = True
 
 class Wall(GameElement):
     IMAGE = "Wall"
     SOLID = True
+    message = True
 
 class Key(GameElement):
     IMAGE = "Key"
@@ -30,6 +32,7 @@ class Key(GameElement):
     def interact(self, player):
         player.key_list.append(self)
         GAME_BOARD.draw_msg("You just acquired a key! You have %d keys!"%(len(player.key_list)))
+        self.message = False
 
 
 class Chest(GameElement):
@@ -38,14 +41,19 @@ class Chest(GameElement):
     #APPEAR = True
 
     def interact(self, player):
-
+            self.message = False
             if len(player.key_list) >= 1 and self.IMAGE == "Chest":
                 self.change_image("Open_chest")
                 player.key_list.pop()
+                GAME_BOARD.draw_msg("You opened the chest! Now get the star.")
+            elif self.IMAGE == "Open_chest":
+                self.SOLID = False
                 player.inventory.append("Star")
                 #print player.inventory
                 #message is being overwritten by SOLID error message, need to give this message priority
-                #GAME_BOARD.draw_msg("You opened the chest and got a gem!")
+                GAME_BOARD.draw_msg("You got a star! You can now kill angry birds")
+            else:
+                GAME_BOARD.draw_msg("You need a key to open this chest.")
 
 
 class Door(GameElement):
@@ -54,6 +62,7 @@ class Door(GameElement):
     #APPEAR = True
 
     def interact(self, player):
+        self.message = False
         for item in player.inventory:
             if item.COLOR == "orange":
                 self.change_image("DoorOpen")
@@ -96,7 +105,7 @@ class Character(GameElement):
 
 
 
-                if existing_el and existing_el.SOLID:
+                if existing_el and existing_el.SOLID and existing_el.message:
                     self.board.draw_msg("There's something in my way!")   
                 elif existing_el is None or not existing_el.SOLID:
                     self.board.del_el(self.x, self.y)
@@ -129,11 +138,48 @@ class Character(GameElement):
         self.inventory = []
         self.key_list = []
 
+class BadGuy(GameElement):
+        IMAGE = "Bug"
+        direction = 1
+        SOLID = True
+        STATE = 0
+        INPUT = False #delete later
+
+        def update(self, dt):
+            if self.STATE == 0:
+                next_y = self.y + self.direction
+
+                if next_y < 0 or next_y >= self.board.height:
+                    self.direction *= -1
+                    next_y = self.y
+
+                self.board.del_el(self.x, self.y)
+                self.board.set_el(self.x, next_y, self)
+            else:
+                pass
+
+        def interact(self, player):
+            self.message = False
+            if self.STATE == 0:
+                GAME_BOARD.draw_msg("Halt! You may not pass until you answer my riddle. (Press up to continue)")
+                self.STATE = 1
+            elif self.STATE == 1:
+                GAME_BOARD.draw_msg("Question")
+                if self.INPUT:
+                    self.STATE = 2
+                else:
+                    GAME_BOARD.draw_msg("WRONG! Try again.")
+                    self.INPUT = True
+            else:
+                GAME_BOARD.draw_msg("Congratulations! You may pass!")
+                self.board.del_el(self.x, self.y)
+
 class Gem(GameElement):
     SOLID = False
     APPEAR = False
 
     def interact(self, player):
+        self.message = False
         player.inventory.append(self)
         GAME_BOARD.draw_msg("You just acquired a gem! You have %d gems!"%(len(player.inventory)))
         #print player.inventory
@@ -156,17 +202,28 @@ class Princess(GameElement):
     SOLID = True
     IMAGE = "Princess" 
 
+    def interact(self, player):
+        self.message = False
+        if len(player.inventory) == 3: 
+            GAME_BOARD.draw_msg("Sparkly gems == true love.  Let's live happily ever after!")
+            ###Make heart appear
+        else:
+            GAME_BOARD.draw_msg("No(t enough) gems, no love. Try again.")
+
 class Tree(GameElement):
     SOLID = True
     IMAGE = "TallTree"  
+    message = True
 
 class Bug(GameElement):
     SOLID = True
     IMAGE = "Bug" 
 
     def interact(self, player):
-        if "Star" in player.inventory: #make not allow unless has gems? or leave that to princess?
+        self.message = False
+        if "Star" in player.inventory: 
             self.SOLID = False
+            player.inventory.remove("Star")
 
 ####   End class definitions    ####
 
@@ -206,7 +263,7 @@ def initialize():
     GAME_BOARD.register(player)
     GAME_BOARD.set_el(2, 2, player)
 
-    GAME_BOARD.draw_msg("Save the princess from the monster ladybug by getting all three gems!")
+    GAME_BOARD.draw_msg("Save the princess from the angry bird by getting all three gems!")
 
     bluegem = BlueGem()
     GAME_BOARD.register(bluegem)
@@ -254,3 +311,8 @@ def initialize():
     bug = Bug()
     GAME_BOARD.register(bug)
     GAME_BOARD.set_el(12, 1, bug)
+
+    moving_bug = BadGuy()
+    GAME_BOARD.register(moving_bug)
+    GAME_BOARD.set_el(10, 3, moving_bug)
+
