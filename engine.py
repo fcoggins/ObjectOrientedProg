@@ -5,8 +5,8 @@ from pyglet.window import key
 from core import GameElement
 from board import Board
 
-SCREEN_X = 900
-SCREEN_Y = 800
+SCREEN_X = 1600
+SCREEN_Y = 1000
 
 game_window = pyglet.window.Window(SCREEN_X, SCREEN_Y)
 board = None
@@ -46,7 +46,8 @@ def setup_images():
             "Horns": "Character Horn Girl.png",
             "Girl": "Character Pink Girl.png",
             "Princess": "Character Princess Girl.png",
-            "Open_chest": "Chest Open.png"
+            "Open_chest": "Chest Open.png",
+            "Bug": "Enemy Bug.png"
             }
 
     for k,v in filenames.items():
@@ -97,13 +98,17 @@ def run():
                       screen_width=SCREEN_X,
                       screen_height=SCREEN_Y)
 
+
         board.IMAGES = IMAGES
         board.draw_board()
+
+        
 
     except (AttributeError) as e:
         board = Board()
         
     game.GAME_BOARD = board
+    
 
 
     # Set up an fps display

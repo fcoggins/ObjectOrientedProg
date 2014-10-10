@@ -9,14 +9,18 @@ GAME_BOARD = None
 DEBUG = False
 ######################
 
-GAME_WIDTH = 8
-GAME_HEIGHT = 8
+GAME_WIDTH = 14
+GAME_HEIGHT = 10
 
 #### Put class definitions here ####
 class Rock(GameElement):
     IMAGE = "Rock"
     SOLID = True
     #APPEAR = True
+
+class Wall(GameElement):
+    IMAGE = "Wall"
+    SOLID = True
 
 class Key(GameElement):
     IMAGE = "Key"
@@ -38,7 +42,7 @@ class Chest(GameElement):
             if len(player.key_list) >= 1 and self.IMAGE == "Chest":
                 self.change_image("Open_chest")
                 player.key_list.pop()
-                player.inventory.append(Gem)
+                player.inventory.append("Star")
                 #print player.inventory
                 #message is being overwritten by SOLID error message, need to give this message priority
                 #GAME_BOARD.draw_msg("You opened the chest and got a gem!")
@@ -50,12 +54,10 @@ class Door(GameElement):
     #APPEAR = True
 
     def interact(self, player):
-        print player.inventory
         for item in player.inventory:
-            print item
             if item.COLOR == "orange":
                 self.change_image("DoorOpen")
-                player.inventory.remove(item)
+                #player.inventory.remove(item)
                 self.SOLID = False
 
 
@@ -149,7 +151,22 @@ class OrangeGem(Gem):
 class GreenGem(Gem):
     IMAGE = "GreenGem"
     COLOR = "green"
-    
+
+class Princess(GameElement):
+    SOLID = True
+    IMAGE = "Princess" 
+
+class Tree(GameElement):
+    SOLID = True
+    IMAGE = "TallTree"  
+
+class Bug(GameElement):
+    SOLID = True
+    IMAGE = "Bug" 
+
+    def interact(self, player):
+        if "Star" in player.inventory: #make not allow unless has gems? or leave that to princess?
+            self.SOLID = False
 
 ####   End class definitions    ####
 
@@ -171,11 +188,25 @@ def initialize():
 
     rocks[-1].SOLID = False
 
+    wall_positions = [
+            (1, 0),(1,1),(1,3),(1,4),(1,5),(1,6),(1,7),(1,8),
+            (2, 0),(2,8),(4,8),(5,2), (5,3), (5,4), (5,5), (5,7), (5,8),
+            (3, 0),
+            (4, 0), (4,2) , (7, 3), (8, 3), (9, 3)
+        ]
+
+   # water = []
+    for pos in wall_positions:
+        wall = Wall()
+        GAME_BOARD.register(wall)
+        GAME_BOARD.set_el(pos[0], pos[1], wall)
+        #water.append(water)
+
     player = Character()
     GAME_BOARD.register(player)
     GAME_BOARD.set_el(2, 2, player)
 
-    GAME_BOARD.draw_msg("This game is wicked awesome.")
+    GAME_BOARD.draw_msg("Save the princess from the monster ladybug by getting all three gems!")
 
     bluegem = BlueGem()
     GAME_BOARD.register(bluegem)
@@ -197,3 +228,29 @@ def initialize():
     GAME_BOARD.register(orangegem)
     GAME_BOARD.set_el(2, 6, orangegem)
 
+    greengem = GreenGem()
+    GAME_BOARD.register(greengem)
+    GAME_BOARD.set_el(8, 8, greengem)
+
+    princess = Princess()
+    GAME_BOARD.register(princess)
+    GAME_BOARD.set_el(13, 0, princess)
+
+    tree_positions = [
+            (6, 1),
+            (12, 0),
+            (12, 2),
+            (13, 2),
+  
+        ]
+
+    trees = []
+    for pos in tree_positions:
+        tree = Tree()
+        GAME_BOARD.register(tree)
+        GAME_BOARD.set_el(pos[0], pos[1], tree)
+        trees.append(tree)
+
+    bug = Bug()
+    GAME_BOARD.register(bug)
+    GAME_BOARD.set_el(12, 1, bug)
