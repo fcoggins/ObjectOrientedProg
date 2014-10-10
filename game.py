@@ -12,6 +12,9 @@ DEBUG = False
 GAME_WIDTH = 14
 GAME_HEIGHT = 10
 
+######################
+KEYBOARD_FUNCTION = 0
+
 #### Put class definitions here ####
 class Rock(GameElement):
     IMAGE = "Rock"
@@ -75,43 +78,45 @@ class Character(GameElement):
 
     def keyboard_handler(self, symbol, modifier):
         
-        direction = None
-        if symbol == key.UP:
-            direction = "up"
-        elif symbol == key.DOWN:
-            direction = "down"
-        elif symbol == key.LEFT:
-            direction = "left"
-        elif symbol == key.RIGHT:
-            direction = "right"
-        
-        self.board.draw_msg("[%s] moves %s" % (self.IMAGE, direction))
+        if KEYBOARD_FUNCTION == 0:
+            direction = None
+            if symbol == key.UP:
+                direction = "up"
+            elif symbol == key.DOWN:
+                direction = "down"
+            elif symbol == key.LEFT:
+                direction = "left"
+            elif symbol == key.RIGHT:
+                direction = "right"
+            
+            self.board.draw_msg("[%s] moves %s" % (self.IMAGE, direction))
 
-        if direction:
-            next_location = self.next_pos(direction)
+            if direction:
+                next_location = self.next_pos(direction)
 
-            if next_location:
-                next_x = next_location[0]
-                next_y = next_location[1]
+                if next_location:
+                    next_x = next_location[0]
+                    next_y = next_location[1]
 
-                existing_el = self.board.get_el(next_x, next_y)
+                    existing_el = self.board.get_el(next_x, next_y)
 
-                if existing_el:
-                    existing_el.interact(self)
-                    hover_object = existing_el
-                    # if existing_el.APPEAR:
-                    #     self.temp_x = next_x
-                    #     self.temp_y = next_y
+                    if existing_el:
+                        existing_el.interact(self)
+                        #hover_object = existing_el
+                        # if existing_el.APPEAR:
+                        #     self.temp_x = next_x
+                        #     self.temp_y = next_y
 
+                    if existing_el and existing_el.SOLID and existing_el.message:
+                        self.board.draw_msg("There's something in my way!")   
+                    elif existing_el is None or not existing_el.SOLID:
+                        self.board.del_el(self.x, self.y)
+                        self.board.set_el(next_x, next_y, self)
+                elif next_location == False:
+                    self.board.draw_msg("You'll fall off the board!")
 
-
-                if existing_el and existing_el.SOLID and existing_el.message:
-                    self.board.draw_msg("There's something in my way!")   
-                elif existing_el is None or not existing_el.SOLID:
-                    self.board.del_el(self.x, self.y)
-                    self.board.set_el(next_x, next_y, self)
-            elif next_location == False:
-                self.board.draw_msg("You'll fall off the board!")
+        else:
+            pass
 
 
     def next_pos(self, direction):
@@ -164,8 +169,10 @@ class BadGuy(GameElement):
                 GAME_BOARD.draw_msg("Halt! You may not pass until you answer my riddle. (Press up to continue)")
                 self.STATE = 1
             elif self.STATE == 1:
-                GAME_BOARD.draw_msg("Question")
-                if self.INPUT:
+                GAME_BOARD.draw_msg("What gets broken without being held?  A _____...")
+                KEYBOARD_FUNCTION = 1
+                if self.INPUT #=="promise":
+                    KEYBOARD_FUNCTION = 0
                     self.STATE = 2
                 else:
                     GAME_BOARD.draw_msg("WRONG! Try again.")
@@ -206,7 +213,7 @@ class Princess(GameElement):
         self.message = False
         if len(player.inventory) == 3: 
             GAME_BOARD.draw_msg("Sparkly gems == true love.  Let's live happily ever after!")
-            ###Make heart appear
+            self.change_image("Princess2")
         else:
             GAME_BOARD.draw_msg("No(t enough) gems, no love. Try again.")
 
@@ -224,6 +231,8 @@ class Bug(GameElement):
         if "Star" in player.inventory: 
             self.SOLID = False
             player.inventory.remove("Star")
+        else:
+            GAME_BOARD.draw_msg("Only stars can defeat me. **Hint hint**")
 
 ####   End class definitions    ####
 
@@ -249,7 +258,9 @@ def initialize():
             (1, 0),(1,1),(1,3),(1,4),(1,5),(1,6),(1,7),(1,8),
             (2, 0),(2,8),(4,8),(5,2), (5,3), (5,4), (5,5), (5,7), (5,8),
             (3, 0),
-            (4, 0), (4,2) , (7, 3), (8, 3), (9, 3)
+            (4, 0), (4,2) , (7, 0), (7, 1), (7, 2), (7, 3), (7, 6), (7, 7), (7, 8), 
+            (8, 3), (8, 8), (9, 3), (9, 4), (9, 5), (9, 6), (9, 7), (9, 8),
+            (11, 2), (11, 3), (11, 4), (11, 5), (11, 6), (11, 7), (11, 8) 
         ]
 
    # water = []
@@ -287,14 +298,13 @@ def initialize():
 
     greengem = GreenGem()
     GAME_BOARD.register(greengem)
-    GAME_BOARD.set_el(8, 8, greengem)
+    GAME_BOARD.set_el(8, 7, greengem)
 
     princess = Princess()
     GAME_BOARD.register(princess)
     GAME_BOARD.set_el(13, 0, princess)
 
     tree_positions = [
-            (6, 1),
             (12, 0),
             (12, 2),
             (13, 2),

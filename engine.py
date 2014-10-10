@@ -45,9 +45,10 @@ def setup_images():
             "Cat": "balloonicorn_main_01.png",
             "Horns": "Character Horn Girl.png",
             "Girl": "Character Pink Girl.png",
-            "Princess": "Character Princess Girl.png",
+            "Princess": "Princess.png",
             "Open_chest": "Chest Open.png",
-            "Bug": "green_bird.png"
+            "Bug": "green_bird.png",
+            "Princess2": "Princess2.png"
             }
 
     for k,v in filenames.items():
